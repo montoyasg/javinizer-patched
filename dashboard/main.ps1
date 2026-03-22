@@ -13,6 +13,16 @@ Import-Module UniversalDashboard.UDPlayer
 Import-Module UniversalDashboard.UDScrollUp
 Import-Module UniversalDashboard.UDSpinner
 Import-Module $cache:fullModulePath
+
+# Fix PS 7.4 Universal Dashboard AST Circular Reference Bug
+if ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GetName().Name -eq 'Newtonsoft.Json' }) {
+    [Newtonsoft.Json.JsonConvert]::DefaultSettings = [System.Func[Newtonsoft.Json.JsonSerializerSettings]]{
+        $settings = [Newtonsoft.Json.JsonSerializerSettings]::new()
+        $settings.ReferenceLoopHandling = [Newtonsoft.Json.ReferenceLoopHandling]::Ignore
+        return $settings
+    }
+}
+
 $cache:settings = Get-Content -Path $cache:settingsPath | ConvertFrom-Json
 if (Test-Path -LiteralPath ($cache:settings.'location.log')) {
     $cache:logPath = $cache:settings.'location.log'
