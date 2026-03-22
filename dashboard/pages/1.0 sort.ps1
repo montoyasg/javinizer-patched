@@ -757,7 +757,16 @@ New-UDPage -Name "Sort" -Content {
                             New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 12 -Content {
                                 New-UDDynamic -Id 'dynamic-sort-filebrowser' -Content {
                                     $cache:filePath = (Get-UDElement -Id 'textbox-sort-directorypath').value
-                                    $search = Get-ChildItem -LiteralPath $cache:filePath | Select-Object Name, Length, FullName, Mode, Extension, LastWriteTime | ConvertTo-Json | ConvertFrom-Json
+                                    $search = Get-ChildItem -LiteralPath $cache:filePath | ForEach-Object {
+                                        [PSCustomObject]@{
+                                            Name          = $_.Name
+                                            Length        = $_.Length
+                                            FullName      = $_.FullName
+                                            Mode          = $_.Mode
+                                            Extension     = $_.Extension
+                                            LastWriteTime = $_.LastWriteTime.ToString('o')
+                                        }
+                                    }
                                     $searchColumns = @(
                                         New-UDTableColumn -Property Name -Title 'Name' -Render {
                                             if ($EventData.Mode -like 'd*') {
